@@ -1,0 +1,49 @@
+import { useEffect, useState } from "react";
+import { fetchApi } from "@/api/core";
+
+type Path = {
+  uri: string;
+  title: string;
+  score: number;
+  matched: string[];
+  missing: string[];
+  offers: number;
+};
+
+export function CareerPathsPage() {
+  const [paths, setPaths] = useState<Path[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    fetchApi<Path[]>("/career-paths").then(setPaths, (e) => setError(String(e?.message ?? e)));
+  }, []);
+
+  return (
+    <main className="mx-auto w-full max-w-4xl space-y-4 px-4 py-8">
+      <h1 className="text-2xl font-semibold">Career paths</h1>
+      {error && <p className="text-sm text-destructive">{error}</p>}
+      {!paths && !error && <p className="text-sm text-muted-foreground">Reading your CV and ESCO…</p>}
+      {paths?.length === 0 && <p className="text-sm text-muted-foreground">Import a CV first.</p>}
+      {paths?.map((p) => (
+        <section key={p.uri} className="space-y-2 rounded-lg border border-border bg-card p-4">
+          <div className="flex items-baseline justify-between gap-4">
+            <a href={p.uri} target="_blank" rel="noreferrer" className="font-medium hover:underline">
+              {p.title}
+            </a>
+            <span className="text-xs text-muted-foreground">{p.offers} matching jobs</span>
+          </div>
+          <p className="text-sm">
+            <span className="text-muted-foreground">You have: </span>
+            {p.matched.join(", ")}
+          </p>
+          {p.missing.length > 0 && (
+            <p className="text-sm">
+              <span className="text-muted-foreground">Missing: </span>
+              {p.missing.slice(0, 8).join(", ")}
+            </p>
+          )}
+        </section>
+      ))}
+    </main>
+  );
+}

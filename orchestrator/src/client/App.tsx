@@ -33,6 +33,7 @@ import { SignInPage } from "./pages/SignInPage";
 import { SsoCallbackPage } from "./pages/SsoCallbackPage";
 import { TracerLinksPage } from "./pages/TracerLinksPage";
 import { TrackingInboxPage } from "./pages/TrackingInboxPage";
+import { CareerPathsPage } from "./pages/CareerPathsPage";
 import { VisaSponsorsPage } from "./pages/VisaSponsorsPage";
 import { WatchlistPage } from "./pages/WatchlistPage";
 
@@ -202,6 +203,7 @@ export const App: React.FC = () => {
                 />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/tracer-links" element={<TracerLinksPage />} />
+                <Route path="/career-paths" element={<CareerPathsPage />} />
                 <Route path="/visa-sponsors" element={<VisaSponsorsPage />} />
                 <Route
                   path="/tracking-inbox"

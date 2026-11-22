@@ -1,5 +1,6 @@
 import {
   Columns3,
+  Compass,
   Eye,
   FilePenLine,
   Home,
@@ -49,6 +50,7 @@ export const NAV_LINKS: NavLink[] = [
     icon: Link2,
     activePaths: ["/tracer-links"],
   },
+  { to: "/career-paths", label: "Career Paths", icon: Compass },
   { to: "/visa-sponsors", label: "Visa Sponsors", icon: Shield },
   { to: "/watchlist", label: "Watchlist", icon: Eye },
   { to: "/settings", label: "Settings", icon: Settings },
