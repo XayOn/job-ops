@@ -6,6 +6,7 @@ import {
   unauthorized,
 } from "@infra/errors";
 import { asyncRoute, fail, ok } from "@infra/http";
+import { getRequestContext } from "@infra/request-context";
 import { blacklistToken, signToken, verifyToken } from "@server/auth/jwt";
 import { verifyPassword } from "@server/auth/password";
 import { getJobOpsAppConfig } from "@server/config/app-mode";
@@ -188,6 +189,28 @@ authRouter.post(
     }
 
     ok(res, { token, expiresIn });
+  }),
+);
+
+authRouter.post(
+  "/mcp-token",
+  asyncRoute(async (_req: Request, res: Response) => {
+    const c = getRequestContext();
+    if (!c?.userId || !c.tenantId || !c.username) {
+      fail(res, badRequest("Sign in first"));
+      return;
+    }
+    ok(
+      res,
+      await signToken({
+        sub: c.userId,
+        userId: c.userId,
+        tenantId: c.tenantId,
+        username: c.username,
+        isSystemAdmin: !!c.isSystemAdmin,
+        expiresIn: 10 * 365 * 24 * 3600,
+      }),
+    );
   }),
 );
 

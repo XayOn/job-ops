@@ -100,12 +100,13 @@ export async function signToken(args: {
   tenantId: string;
   username: string;
   isSystemAdmin: boolean;
+  expiresIn?: number;
 }): Promise<{
   token: string;
   expiresIn: number;
 }> {
   const secret = await getJwtSecret();
-  const expiresIn = getJwtExpirySeconds();
+  const expiresIn = args.expiresIn ?? getJwtExpirySeconds();
   const jti = randomUUID();
   const expiresAt = Math.floor(Date.now() / 1000) + expiresIn;
 
