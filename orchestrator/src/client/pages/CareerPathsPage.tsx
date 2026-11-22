@@ -17,6 +17,12 @@ const enrolIn = (courseId: number) =>
     (e) => alert(String(e?.message ?? e)),
   );
 
+const generate = (skill: string) =>
+  fetchApi<{ url: string }>("/career-paths/generate-course", { method: "POST", body: JSON.stringify({ skill }) }).then(
+    (c) => window.open(c.url, "_blank"),
+    (e) => alert(String(e?.message ?? e)),
+  );
+
 export function CareerPathsPage() {
   const [paths, setPaths] = useState<Path[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -46,7 +52,11 @@ export function CareerPathsPage() {
           {p.missing.length > 0 && (
             <p className="text-sm">
               <span className="text-muted-foreground">Missing: </span>
-              {p.missing.slice(0, 8).join(", ")}
+              {p.missing.slice(0, 8).map((m) => (
+                <button key={m} type="button" title="Generate a course" className="mr-2 underline" onClick={() => generate(m)}>
+                  {m}
+                </button>
+              ))}
             </p>
           )}
           {p.courses?.map((c) => (

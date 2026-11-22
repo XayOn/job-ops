@@ -1,6 +1,7 @@
 import * as jobs from "@server/repositories/jobs";
 import { myEmail } from "@server/api/routes/career-paths";
 import { careerPaths } from "@server/services/career-paths";
+import { generateCourse } from "@server/services/course-generator";
 import { enrol } from "@server/services/moodle";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
@@ -31,6 +32,11 @@ const TOOLS = [
     name: "enrol_course",
     description: "Enrol me in a Moodle course from my career paths.",
     inputSchema: { type: "object", properties: { courseId: { type: "number" } }, required: ["courseId"] },
+  },
+  {
+    name: "generate_course",
+    description: "Generate a self-study course for a missing skill and publish it in Moodle.",
+    inputSchema: { type: "object", properties: { skill: { type: "string" }, language: { type: "string" } }, required: ["skill"] },
   },
   {
     name: "list_jobs",
@@ -98,6 +104,7 @@ const call = async (name: string, a: Record<string, string>) => {
     if (!email) throw new Error("No email: sign in with SSO");
     return ok(await enrol(email, Number(a.courseId)));
   }
+  if (name === "generate_course") return ok(await generateCourse(a.skill, a.language ?? "es"));
   if (name === "list_jobs")
     return ok((await jobs.getAllJobs(a.status ? [a.status as JobStatus] : undefined)).map(brief));
   if (name === "get_job") return ok(await jobs.getJobById(a.id));
