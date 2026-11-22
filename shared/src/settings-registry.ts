@@ -927,6 +927,21 @@ export const settingsRegistry = {
       z.string().trim().url().max(2000).nullable(),
     ),
   },
+  tududiUrl: {
+    kind: "string" as const,
+    schema: z.preprocess(
+      (value) => (value === "" ? null : value),
+      z.string().trim().url().max(2000).nullable(),
+    ),
+  },
+  tududiToken: {
+    kind: "secret" as const,
+    schema: z.string().trim().max(2000),
+  },
+  tududiProjectId: {
+    kind: "string" as const,
+    schema: z.string().trim().max(200),
+  },
   ukvisajobsEmail: {
     kind: "string" as const,
     envKey: "UKVISAJOBS_EMAIL",
