@@ -28,6 +28,7 @@ import { DEFAULT_TENANT_ID } from "@server/tenancy/constants";
 import cors from "cors";
 import express from "express";
 import { apiRouter } from "./api/index";
+import { mcpHandler } from "./mcp";
 import { ojcpManifestHandler, ojcpMcpHandler } from "./ojcp";
 import { resolveTracerRedirect } from "./services/tracer-links";
 
@@ -475,6 +476,7 @@ export function createApp() {
 
   app.get("/.well-known/ojcp.json", ojcpManifestHandler);
   app.all("/ojcp/mcp", ojcpMcpHandler);
+  app.post("/mcp", mcpHandler);
 
   // API routes
   app.use("/api", apiRouter);
