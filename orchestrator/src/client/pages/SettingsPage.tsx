@@ -24,6 +24,7 @@ import { ChatSettingsSection } from "@client/pages/settings/components/ChatSetti
 import { DangerZoneSection } from "@client/pages/settings/components/DangerZoneSection";
 import { DisplaySettingsSection } from "@client/pages/settings/components/DisplaySettingsSection";
 import { EnvironmentSettingsSection } from "@client/pages/settings/components/EnvironmentSettingsSection";
+import { IntegrationsSection } from "@client/pages/settings/components/IntegrationsSection";
 import { ModelSettingsSection } from "@client/pages/settings/components/ModelSettingsSection";
 import { PromptTemplatesSection } from "@client/pages/settings/components/PromptTemplatesSection";
 import { ReactiveResumeSection } from "@client/pages/settings/components/ReactiveResumeSection";
@@ -136,6 +137,7 @@ type SettingsSectionId =
   | "scoring"
   | "reactive-resume"
   | "webhooks"
+  | "integrations"
   | "tracer-links"
   | "environment"
   | "display"
@@ -243,6 +245,12 @@ const SETTINGS_NAV_GROUPS: SettingsNavGroup[] = [
         label: "Webhooks",
         description: "Pipeline and job completion event destinations.",
         searchTerms: ["hooks", "notifications", "pipeline", "applied"],
+      },
+      {
+        id: "integrations",
+        label: "Integrations",
+        description: "Tududi sync and MCP access token.",
+        searchTerms: ["tududi", "mcp", "claude", "token", "sync"],
       },
       {
         id: "tracer-links",
@@ -358,6 +366,7 @@ const SECTION_FIELD_MAP: Record<
     "resumeProjects",
   ],
   webhooks: ["pipelineWebhookUrl", "jobCompleteWebhookUrl", "webhookSecret"],
+  integrations: [],
   "tracer-links": [],
   environment: [
     "ukvisajobsEmail",
@@ -1738,6 +1747,9 @@ export const SettingsPage: React.FC = () => {
         />
       );
       break;
+    case "integrations":
+      activeSectionContent = <IntegrationsSection layoutMode="panel" />;
+      break;
     case "environment":
       activeSectionContent = (
         <EnvironmentSettingsSection
@@ -1832,7 +1844,7 @@ export const SettingsPage: React.FC = () => {
                 : null
             }
             actions={
-              activeSection === "billing" ? null : (
+              activeSection === "billing" || activeSection === "integrations" ? null : (
                 <>
                   {activeSectionIsDirty ? (
                     <Button
