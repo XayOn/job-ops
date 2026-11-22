@@ -1,5 +1,5 @@
 import { type FormEvent, useState } from "react";
-import { fetchApi } from "@/api/core";
+import { fetchApi } from "@client/api/core";
 
 type Message = { role: "user" | "assistant"; content: string };
 

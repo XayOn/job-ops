@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchApi } from "@/api/core";
+import { fetchApi } from "@client/api/core";
 
 type Path = {
   uri: string;
