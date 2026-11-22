@@ -4,6 +4,7 @@
 
 import { Router } from "express";
 import { appStatusRouter } from "./routes/app-status";
+import { assistantRouter } from "./routes/assistant";
 import { authRouter } from "./routes/auth";
 import { authSsoRouter } from "./routes/auth-sso";
 import { backupRouter } from "./routes/backup";
@@ -33,6 +34,7 @@ import { workspacesRouter } from "./routes/workspaces";
 export const apiRouter = Router();
 
 apiRouter.use("/app", appStatusRouter);
+apiRouter.use("/assistant", assistantRouter);
 apiRouter.use("/billing", billingRouter);
 apiRouter.use("/career-paths", careerPathsRouter);
 apiRouter.use("/jobs", jobsRouter);

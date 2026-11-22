@@ -1,4 +1,5 @@
 import {
+  Bot,
   Columns3,
   Compass,
   Eye,
@@ -20,6 +21,7 @@ export type NavLink = {
 
 export const NAV_LINKS: NavLink[] = [
   { to: "/overview", label: "Overview", icon: Home },
+  { to: "/assistant", label: "Assistant", icon: Bot },
   {
     to: "/jobs/ready",
     label: "Jobs",
