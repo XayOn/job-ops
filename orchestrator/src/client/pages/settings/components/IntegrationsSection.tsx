@@ -111,7 +111,7 @@ export const IntegrationsSection: React.FC<Props> = ({ layoutMode }) => {
             variant="outline"
             disabled={busy}
             onClick={() =>
-              run(async () => setToken(await post<string>("/auth/mcp-token")))
+              run(async () => setToken((await post<{ token: string }>("/auth/mcp-token")).token))
             }
           >
             Create MCP token
