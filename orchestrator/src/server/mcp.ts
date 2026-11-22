@@ -1,4 +1,5 @@
 import * as jobs from "@server/repositories/jobs";
+import { careerPaths } from "@server/services/career-paths";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
@@ -19,6 +20,11 @@ const STATUSES: JobStatus[] = [
 ];
 
 const TOOLS = [
+  {
+    name: "career_paths",
+    description: "Occupations my CV leads to (ESCO), with matched and missing skills and how many of my jobs fit.",
+    inputSchema: { type: "object", properties: { language: { type: "string" } } },
+  },
   {
     name: "list_jobs",
     description: "List my jobs, optionally filtered by status.",
@@ -79,6 +85,7 @@ const brief = (j: Awaited<ReturnType<typeof jobs.getJobById>>) =>
   };
 
 const call = async (name: string, a: Record<string, string>) => {
+  if (name === "career_paths") return ok(await careerPaths(a.language ?? "es"));
   if (name === "list_jobs")
     return ok((await jobs.getAllJobs(a.status ? [a.status as JobStatus] : undefined)).map(brief));
   if (name === "get_job") return ok(await jobs.getJobById(a.id));

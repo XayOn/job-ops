@@ -8,6 +8,7 @@ import { authRouter } from "./routes/auth";
 import { authSsoRouter } from "./routes/auth-sso";
 import { backupRouter } from "./routes/backup";
 import { billingRouter } from "./routes/billing";
+import { careerPathsRouter } from "./routes/career-paths";
 import { databaseRouter } from "./routes/database";
 import { demoRouter } from "./routes/demo";
 import { designResumeRouter } from "./routes/design-resume";
@@ -32,6 +33,7 @@ export const apiRouter = Router();
 
 apiRouter.use("/app", appStatusRouter);
 apiRouter.use("/billing", billingRouter);
+apiRouter.use("/career-paths", careerPathsRouter);
 apiRouter.use("/jobs", jobsRouter);
 apiRouter.use("/jobs/:id/chat", ghostwriterRouter);
 apiRouter.use("/demo", demoRouter);
