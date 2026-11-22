@@ -1,6 +1,7 @@
 import { getLatestDesignResumeDocument } from "@server/repositories/design-resume";
 import { getAllJobs } from "@server/repositories/jobs";
 import { createConfiguredLlmService, resolveLlmModel } from "./modelSelection";
+import { coursesFor } from "./moodle";
 
 const ESCO = "https://ec.europa.eu/esco/api";
 
@@ -97,7 +98,12 @@ export async function careerPaths(language = "es", top = 5) {
         .map((l) => l.title);
       const words = o.title.toLowerCase().split(/[\s/]+/).filter((w) => w.length > 4);
       const offers = jobs.filter((j) => words.some((w) => j.title.toLowerCase().includes(w))).length;
-      return { uri, title: o.title, score: o.score, matched: [...new Set(o.via)], missing, offers };
+      const courses = [
+        ...new Map(
+          (await Promise.all(missing.slice(0, 3).map(coursesFor))).flat().map((c) => [c.id, c]),
+        ).values(),
+      ];
+      return { uri, title: o.title, score: o.score, matched: [...new Set(o.via)], missing, offers, courses };
     }),
   );
 }

@@ -1,5 +1,7 @@
 import * as jobs from "@server/repositories/jobs";
+import { myEmail } from "@server/api/routes/career-paths";
 import { careerPaths } from "@server/services/career-paths";
+import { enrol } from "@server/services/moodle";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
@@ -24,6 +26,11 @@ const TOOLS = [
     name: "career_paths",
     description: "Occupations my CV leads to (ESCO), with matched and missing skills and how many of my jobs fit.",
     inputSchema: { type: "object", properties: { language: { type: "string" } } },
+  },
+  {
+    name: "enrol_course",
+    description: "Enrol me in a Moodle course from my career paths.",
+    inputSchema: { type: "object", properties: { courseId: { type: "number" } }, required: ["courseId"] },
   },
   {
     name: "list_jobs",
@@ -86,6 +93,11 @@ const brief = (j: Awaited<ReturnType<typeof jobs.getJobById>>) =>
 
 const call = async (name: string, a: Record<string, string>) => {
   if (name === "career_paths") return ok(await careerPaths(a.language ?? "es"));
+  if (name === "enrol_course") {
+    const email = await myEmail();
+    if (!email) throw new Error("No email: sign in with SSO");
+    return ok(await enrol(email, Number(a.courseId)));
+  }
   if (name === "list_jobs")
     return ok((await jobs.getAllJobs(a.status ? [a.status as JobStatus] : undefined)).map(brief));
   if (name === "get_job") return ok(await jobs.getJobById(a.id));

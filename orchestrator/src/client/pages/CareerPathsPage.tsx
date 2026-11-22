@@ -8,7 +8,14 @@ type Path = {
   matched: string[];
   missing: string[];
   offers: number;
+  courses?: { id: number; name: string; url: string }[];
 };
+
+const enrolIn = (courseId: number) =>
+  fetchApi("/career-paths/enrol", { method: "POST", body: JSON.stringify({ courseId }) }).then(
+    () => alert("Enrolled"),
+    (e) => alert(String(e?.message ?? e)),
+  );
 
 export function CareerPathsPage() {
   const [paths, setPaths] = useState<Path[] | null>(null);
@@ -42,6 +49,16 @@ export function CareerPathsPage() {
               {p.missing.slice(0, 8).join(", ")}
             </p>
           )}
+          {p.courses?.map((c) => (
+            <p key={c.id} className="flex items-center gap-3 text-sm">
+              <a href={c.url} target="_blank" rel="noreferrer" className="hover:underline">
+                {c.name}
+              </a>
+              <button type="button" className="text-xs underline" onClick={() => enrolIn(c.id)}>
+                Enrol
+              </button>
+            </p>
+          ))}
         </section>
       ))}
     </main>
