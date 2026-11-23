@@ -25,6 +25,27 @@ const STATUSES: JobStatus[] = [
 
 const TOOLS = [
   {
+    name: "run_search",
+    description:
+      "Start a job search in the background (JobSpy: LinkedIn, Indeed, ...), score the results against my CV and save them. Poll search_status, then list_jobs.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        searchTerms: { type: "array", items: { type: "string" } },
+        country: { type: "string", description: "e.g. spain" },
+        cityLocations: { type: "array", items: { type: "string" } },
+        workplaceTypes: { type: "array", items: { type: "string", enum: ["remote", "hybrid", "onsite"] } },
+        sources: { type: "array", items: { type: "string" } },
+        topN: { type: "number" },
+      },
+    },
+  },
+  {
+    name: "search_status",
+    description: "Whether a job search is running and how the last one went.",
+    inputSchema: { type: "object", properties: {} },
+  },
+  {
     name: "career_paths",
     description: "Occupations my CV leads to (ESCO), with matched and missing skills and how many of my jobs fit.",
     inputSchema: { type: "object", properties: { language: { type: "string" } } },
@@ -108,7 +129,18 @@ const brief = (j: Awaited<ReturnType<typeof jobs.getJobById>>) =>
     url: j.jobUrl,
   };
 
-const call = async (name: string, a: Record<string, any>) => {
+const self = async (auth: string | undefined, path: string, body?: unknown) => {
+  const r = await fetch(`http://127.0.0.1:${process.env.PORT ?? 3001}/api/pipeline${path}`, {
+    method: body ? "POST" : "GET",
+    headers: { "content-type": "application/json", ...(auth ? { authorization: auth } : {}) },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  return ok(await r.json());
+};
+
+const call = async (name: string, a: Record<string, any>, auth?: string) => {
+  if (name === "run_search") return self(auth, "/run", a);
+  if (name === "search_status") return self(auth, "/status");
   if (name === "career_paths") return ok(await careerPaths(a.language ?? "es"));
   if (name === "enrol_course") {
     const email = await myEmail();
@@ -132,7 +164,7 @@ export const mcpHandler: RequestHandler = async (req, res) => {
   const server = new Server({ name: "jobops", version: "1" }, { capabilities: { tools: {} } });
   server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOLS }));
   server.setRequestHandler(CallToolRequestSchema, (r) =>
-    call(r.params.name, (r.params.arguments ?? {}) as Record<string, string>),
+    call(r.params.name, (r.params.arguments ?? {}) as Record<string, string>, req.headers.authorization),
   );
   const transport = new StreamableHTTPServerTransport({ sessionIdGenerator: undefined, enableJsonResponse: true });
   await server.connect(transport);
