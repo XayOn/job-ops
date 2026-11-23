@@ -64,6 +64,36 @@ const findSkill = async (term: string, language: string) => {
   return null;
 };
 
+const cvText = (resume: any) =>
+  JSON.stringify({
+    summary: resume?.summary?.content,
+    experience: (resume?.sections?.experience?.items ?? []).map((e: any) => [e.position, e.company, e.summary]),
+    skills: (resume?.sections?.skills?.items ?? []).map((s: any) => [s.name, s.keywords]),
+  }).slice(0, 12000);
+
+const realGaps = async (resume: any, paths: { title: string; missing: string[] }[], language: string) => {
+  const llm = await createConfiguredLlmService();
+  const r = await llm.callJson<{ gaps: string[][] }>({
+    model: await resolveLlmModel(),
+    messages: [
+      {
+        role: "user",
+        content: `CV:\n${cvText(resume)}\n\nFor each occupation below, keep only the listed skills this person clearly does NOT have yet, judging from the whole CV (seniority implies basics). At most 5 per occupation, most important first, in language "${language}". Same order as the input. Reply with only JSON: {"gaps":[["skill"]]}\n\n${paths.map((p, i) => `${i}. ${p.title}: ${p.missing.join("; ")}`).join("\n")}`,
+      },
+    ],
+    jsonSchema: {
+      name: "gaps",
+      schema: {
+        type: "object",
+        properties: { gaps: { type: "array", items: { type: "array", items: { type: "string" } } } },
+        required: ["gaps"],
+        additionalProperties: false,
+      },
+    },
+  });
+  return r.success ? r.data.gaps : paths.map((p) => p.missing.slice(0, 5));
+};
+
 export async function careerPaths(language = "es", top = 5) {
   const doc = await getLatestDesignResumeDocument();
   const terms = resumeTerms(doc?.resumeJson);
@@ -90,7 +120,7 @@ export async function careerPaths(language = "es", top = 5) {
   }
   const best = [...tally.entries()].sort((a, b) => b[1].score - a[1].score).slice(0, top);
   const jobs = await getAllJobs();
-  return Promise.all(
+  const found = await Promise.all(
     best.map(async ([uri, o]) => {
       const links = (await esco("resource/occupation", { uri, language }))._links ?? {};
       const missing = ((links.hasEssentialSkill ?? []) as Link[])
@@ -98,12 +128,17 @@ export async function careerPaths(language = "es", top = 5) {
         .map((l) => l.title);
       const words = o.title.toLowerCase().split(/[\s/]+/).filter((w) => w.length > 4);
       const offers = jobs.filter((j) => words.some((w) => j.title.toLowerCase().includes(w))).length;
+      return { uri, title: o.title, score: o.score, matched: [...new Set(o.via)], missing, offers };
+    }),
+  );
+  const gaps = await realGaps(doc?.resumeJson, found, language);
+  return Promise.all(
+    found.map(async (p, i) => {
+      const missing = gaps[i] ?? [];
       const courses = [
-        ...new Map(
-          (await Promise.all(missing.slice(0, 3).map(coursesFor))).flat().map((c) => [c.id, c]),
-        ).values(),
+        ...new Map((await Promise.all(missing.slice(0, 3).map(coursesFor))).flat().map((c) => [c.id, c])).values(),
       ];
-      return { uri, title: o.title, score: o.score, matched: [...new Set(o.via)], missing, offers, courses };
+      return { ...p, missing, courses };
     }),
   );
 }

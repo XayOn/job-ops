@@ -35,7 +35,7 @@ export function CareerPathsPage() {
     <main className="mx-auto w-full max-w-4xl space-y-4 px-4 py-8">
       <h1 className="text-2xl font-semibold">Career paths</h1>
       {error && <p className="text-sm text-destructive">{error}</p>}
-      {!paths && !error && <p className="text-sm text-muted-foreground">Reading your CV and ESCO…</p>}
+      {!paths && !error && <p className="text-sm text-muted-foreground">Reading your CV, ESCO and real gaps… this takes about 30 seconds.</p>}
       {paths?.length === 0 && <p className="text-sm text-muted-foreground">Import a CV first.</p>}
       {paths?.map((p) => (
         <section key={p.uri} className="space-y-2 rounded-lg border border-border bg-card p-4">
@@ -50,14 +50,20 @@ export function CareerPathsPage() {
             {p.matched.join(", ")}
           </p>
           {p.missing.length > 0 && (
-            <p className="text-sm">
-              <span className="text-muted-foreground">Missing: </span>
-              {p.missing.slice(0, 8).map((m) => (
-                <button key={m} type="button" title="Generate a course" className="mr-2 underline" onClick={() => generate(m)}>
+            <div className="flex flex-wrap items-center gap-2 text-sm">
+              <span className="text-muted-foreground">To learn:</span>
+              {p.missing.map((m) => (
+                <button
+                  key={m}
+                  type="button"
+                  title="Generate a course"
+                  className="rounded-full border border-border px-2 py-0.5 text-xs hover:bg-muted"
+                  onClick={() => generate(m)}
+                >
                   {m}
                 </button>
               ))}
-            </p>
+            </div>
           )}
           {p.courses?.map((c) => (
             <p key={c.id} className="flex items-center gap-3 text-sm">
