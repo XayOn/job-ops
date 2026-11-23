@@ -273,8 +273,15 @@ export async function runJobSpy(
     .join(",");
 
   const searchTerms = resolveSearchTerms(options);
-  const runLocations = resolveJobSpyLocations(options);
   const countryIndeed = resolveJobSpyCountryIndeed(options);
+  const cityLocations = resolveJobSpyLocations(options);
+  const remoteCountry =
+    options.workplaceTypes?.includes("remote") &&
+    countryIndeed &&
+    cityLocations.some((l) => l && l.toLowerCase() !== countryIndeed.toLowerCase())
+      ? countryIndeed
+      : null;
+  const runLocations = remoteCountry ? [...cityLocations, remoteCountry] : cityLocations;
   if (searchTerms.length === 0) {
     return { success: true, jobs: [] };
   }
@@ -340,6 +347,7 @@ export async function runJobSpy(
                   "1",
               ),
               JOBSPY_IS_REMOTE: String(
+                (location === remoteCountry ? true : undefined) ??
                 options.isRemote ??
                   deriveIsRemoteFlag(options.workplaceTypes) ??
                   process.env.JOBSPY_IS_REMOTE ??
