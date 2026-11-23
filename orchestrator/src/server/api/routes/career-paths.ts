@@ -4,6 +4,7 @@ import { listSsoIdentitiesForUser } from "@server/repositories/sso-identities";
 import { careerPaths } from "@server/services/career-paths";
 import { generateCourse } from "@server/services/course-generator";
 import { enrol } from "@server/services/moodle";
+import { trainingPlan } from "@server/services/training-plan";
 import type { Request, Response } from "express";
 import { Router } from "express";
 
@@ -32,5 +33,13 @@ careerPathsRouter.post(
   "/generate-course",
   asyncRoute(async (req: Request, res: Response) => {
     ok(res, await generateCourse(String(req.body?.skill), String(req.body?.language ?? "es")));
+  }),
+);
+
+careerPathsRouter.post(
+  "/plan",
+  asyncRoute(async (req: Request, res: Response) => {
+    const missing = Array.isArray(req.body?.missing) ? req.body.missing.map(String) : [];
+    ok(res, await trainingPlan(String(req.body?.title ?? ""), missing, await myEmail(), String(req.body?.language ?? "es")));
   }),
 );

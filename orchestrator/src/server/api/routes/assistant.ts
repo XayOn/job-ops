@@ -39,9 +39,9 @@ const agents = {
     tools: [t("get_job"), t("list_jobs")],
   },
   formacion: {
-    description: "Career paths, Moodle courses, enrolment and generated courses.",
-    prompt: `Muestra itinerarios profesionales, cursos y genera cursos para habilidades que faltan. Show career paths and courses; enrol or generate a course only when asked.\n${RULES}`,
-    tools: [t("career_paths"), t("enrol_course"), t("generate_course")],
+    description: "Career paths, Moodle courses, enrolment, generated courses and training plans.",
+    prompt: `Muestra itinerarios profesionales, cursos y genera cursos para habilidades que faltan; si el usuario lo pide, crea un plan de formación semanal con create_training_plan usando las habilidades que le faltan de un itinerario. Show career paths and courses; enrol, generate a course or create a training plan (create_training_plan, one missing skill per week) only when asked.\n${RULES}`,
+    tools: [t("career_paths"), t("enrol_course"), t("generate_course"), t("create_training_plan")],
   },
   redactor: {
     description: "CV text and cover notes from the user's own facts.",

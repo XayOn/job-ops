@@ -3,6 +3,7 @@ import { myEmail } from "@server/api/routes/career-paths";
 import { careerPaths } from "@server/services/career-paths";
 import { generateCourse } from "@server/services/course-generator";
 import { enrol } from "@server/services/moodle";
+import { trainingPlan } from "@server/services/training-plan";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/streamableHttp.js";
 import {
@@ -37,6 +38,16 @@ const TOOLS = [
     name: "generate_course",
     description: "Generate a self-study course for a missing skill and publish it in Moodle.",
     inputSchema: { type: "object", properties: { skill: { type: "string" }, language: { type: "string" } }, required: ["skill"] },
+  },
+  {
+    name: "create_training_plan",
+    description:
+      "Create a week-by-week training plan for a career path: one missing skill per week from next Monday, reusing or generating a Moodle course, enrolling me, and adding Tududi tasks if configured.",
+    inputSchema: {
+      type: "object",
+      properties: { title: { type: "string" }, missing: { type: "array", items: { type: "string" } }, language: { type: "string" } },
+      required: ["title", "missing"],
+    },
   },
   {
     name: "list_jobs",
@@ -97,7 +108,7 @@ const brief = (j: Awaited<ReturnType<typeof jobs.getJobById>>) =>
     url: j.jobUrl,
   };
 
-const call = async (name: string, a: Record<string, string>) => {
+const call = async (name: string, a: Record<string, any>) => {
   if (name === "career_paths") return ok(await careerPaths(a.language ?? "es"));
   if (name === "enrol_course") {
     const email = await myEmail();
@@ -105,6 +116,8 @@ const call = async (name: string, a: Record<string, string>) => {
     return ok(await enrol(email, Number(a.courseId)));
   }
   if (name === "generate_course") return ok(await generateCourse(a.skill, a.language ?? "es"));
+  if (name === "create_training_plan")
+    return ok(await trainingPlan(a.title, (a.missing ?? []).map(String), await myEmail(), a.language ?? "es"));
   if (name === "list_jobs")
     return ok((await jobs.getAllJobs(a.status ? [a.status as JobStatus] : undefined)).map(brief));
   if (name === "get_job") return ok(await jobs.getJobById(a.id));
