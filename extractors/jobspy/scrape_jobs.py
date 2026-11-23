@@ -111,6 +111,9 @@ def _scrape_for_sites(
         kwargs["country_indeed"] = country_indeed
     if location and location.strip():
         kwargs["location"] = location
+    proxies = os.getenv("JOBSPY_PROXIES", "").strip()
+    if proxies:
+        kwargs["proxies"] = [p.strip() for p in proxies.split(",") if p.strip()]
     return scrape_jobs(**kwargs)
 
 
