@@ -46,6 +46,25 @@ const TOOLS = [
     inputSchema: { type: "object", properties: {} },
   },
   {
+    name: "import_job",
+    description:
+      "Add a job found elsewhere to my workspace; it is scored against my CV. Check list_jobs first to avoid duplicates.",
+    inputSchema: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        employer: { type: "string" },
+        jobUrl: { type: "string" },
+        jobDescription: { type: "string" },
+        location: { type: "string" },
+        salary: { type: "string" },
+        deadline: { type: "string" },
+        sourceJobId: { type: "string" },
+      },
+      required: ["title", "employer", "jobUrl", "jobDescription"],
+    },
+  },
+  {
     name: "career_paths",
     description: "Occupations my CV leads to (ESCO), with matched and missing skills and how many of my jobs fit.",
     inputSchema: { type: "object", properties: { language: { type: "string" } } },
@@ -130,7 +149,7 @@ const brief = (j: Awaited<ReturnType<typeof jobs.getJobById>>) =>
   };
 
 const self = async (auth: string | undefined, path: string, body?: unknown) => {
-  const r = await fetch(`http://127.0.0.1:${process.env.PORT ?? 3001}/api/pipeline${path}`, {
+  const r = await fetch(`http://127.0.0.1:${process.env.PORT ?? 3001}/api${path}`, {
     method: body ? "POST" : "GET",
     headers: { "content-type": "application/json", ...(auth ? { authorization: auth } : {}) },
     body: body ? JSON.stringify(body) : undefined,
@@ -139,8 +158,9 @@ const self = async (auth: string | undefined, path: string, body?: unknown) => {
 };
 
 const call = async (name: string, a: Record<string, any>, auth?: string) => {
-  if (name === "run_search") return self(auth, "/run", a);
-  if (name === "search_status") return self(auth, "/status");
+  if (name === "run_search") return self(auth, "/pipeline/run", a);
+  if (name === "search_status") return self(auth, "/pipeline/status");
+  if (name === "import_job") return self(auth, "/manual-jobs/import", { job: { source: "mcp", ...a } });
   if (name === "career_paths") return ok(await careerPaths(a.language ?? "es"));
   if (name === "enrol_course") {
     const email = await myEmail();
